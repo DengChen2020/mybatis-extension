@@ -19,3 +19,12 @@ mybatis扩展，基于mybatis实现，提供CRUD通用操作，分页，内外�
     <version>1.0.2</version>
 </dependency>
 ```
+兼容旧版注解
+- Maven:
+```xml
+<dependency>
+    <groupId>io.github.dengchen2020</groupId>
+    <artifactId>entity-extension-jx</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
