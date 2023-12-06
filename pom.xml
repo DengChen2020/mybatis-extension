@@ -4,7 +4,7 @@
   <groupId>io.github.dengchen2020</groupId>
   <artifactId>mybatis-extension</artifactId>
   <version>1.0.0</version>
-  <name>mybatis扩展</name>
+  <name>mybatis-extension</name>
   <packaging>jar</packaging>
 
   <developers>
@@ -85,9 +85,9 @@
   </licenses>
 
   <scm>
-    <url>https://github.com/DengChen2020/entity-processor</url>
-    <connection>https://github.com/DengChen2020/entity-processor.git</connection>
-    <developerConnection>https://github.com/DengChen2020/entity-processor.git</developerConnection>
+    <url>https://github.com/DengChen2020/mybatis-extension</url>
+    <connection>https://github.com/DengChen2020/mybatis-extension.git</connection>
+    <developerConnection>https://github.com/DengChen2020/mybatis-extension.git</developerConnection>
   </scm>
 
   <build>
@@ -144,20 +144,20 @@
           </execution>
         </executions>
       </plugin>
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-gpg-plugin</artifactId>-->
-<!--        <version>3.1.0</version>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <id>sign-artifacts</id>-->
-<!--            <phase>verify</phase>-->
-<!--            <goals>-->
-<!--              <goal>sign</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
