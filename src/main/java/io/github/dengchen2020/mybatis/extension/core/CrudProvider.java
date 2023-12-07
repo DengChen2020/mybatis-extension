@@ -1,14 +1,17 @@
 package io.github.dengchen2020.mybatis.extension.core;
 
 import io.github.dengchen2020.mybatis.extension.constant.Params;
-import io.github.dengchen2020.mybatis.extension.constant.SQL;
 import io.github.dengchen2020.mybatis.extension.exception.MybatisCustomException;
 import io.github.dengchen2020.mybatis.extension.metainfo.TableInfo;
+import io.github.dengchen2020.mybatis.extension.util.DateUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
 import org.apache.ibatis.reflection.MetaObject;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
+import static io.github.dengchen2020.mybatis.extension.constant.SQL.EQ;
+import static io.github.dengchen2020.mybatis.extension.constant.SQL.SINGLE_QUOTE;
 import static io.github.dengchen2020.mybatis.extension.core.Provider.*;
 
 /**
@@ -56,7 +59,8 @@ public class CrudProvider {
         if (tableInfo.getVersionField() != null) {
             version = tableInfo.getVersionField().getColumn();
         }
-        for (Iterator<String> iterator = updateColumns.iterator(); iterator.hasNext(); ) {
+        List<String> columns = new ArrayList<>(updateColumns);
+        for (Iterator<String> iterator = columns.iterator(); iterator.hasNext(); ) {
             String column = iterator.next();
             String fieldName = tableInfo.getField(column);
             Object value = null;
@@ -64,16 +68,20 @@ public class CrudProvider {
                 value = metaObject.getValue(fieldName);
                 //乐观锁
                 if (column.equals(version) && !Objects.isNull(value)) {
-                    updateSqlBuilder.addCondition(version + SQL.EQ + value);
                     if (value instanceof Long) {
                         Long num = (Long) value;
+                        updateSqlBuilder.addCondition(version + EQ + num);
                         metaObject.setValue(fieldName, num + 1);
                     } else if (value instanceof Integer) {
                         Integer num = (Integer) value;
+                        updateSqlBuilder.addCondition(version + EQ + num);
                         metaObject.setValue(fieldName, num + 1);
                     } else if (value instanceof Date) {
-                        Date date = (Date) value;
+                        updateSqlBuilder.addCondition(version + EQ + SINGLE_QUOTE + DateUtils.parse((Date) value) + SINGLE_QUOTE);
                         metaObject.setValue(fieldName, new Date());
+                    } else if (value instanceof LocalDateTime) {
+                        updateSqlBuilder.addCondition(version + EQ + SINGLE_QUOTE + DateUtils.parse((LocalDateTime) value) + SINGLE_QUOTE);
+                        metaObject.setValue(fieldName, LocalDateTime.now());
                     }
                 }
             }

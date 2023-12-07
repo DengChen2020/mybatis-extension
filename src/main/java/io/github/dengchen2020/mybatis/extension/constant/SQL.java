@@ -71,6 +71,8 @@ public class SQL {
 
     public static final String SUBTRACT = " - ";
 
+    public static final String SINGLE_QUOTE = "'";
+
     public static String ognlParam(String param) {
         return "#{" + param + "}";
     }

@@ -26,14 +26,14 @@ public class ConvertUtils {
             .registerModule(new JavaTimeModule().addSerializer(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
                         @Override
                         public void serialize(final LocalDateTime value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
-                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS")));
+                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                         }
                     })
             )
             .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, true)
             .setTimeZone(TimeZone.getTimeZone("GMT+08:00"))
-            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSSSS"));
+            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 
     public static List<?> convertList(List<Map<String, Object>> inputList, Class<?> targetType) {
         return inputList.stream()

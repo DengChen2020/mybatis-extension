@@ -8,6 +8,7 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,7 +59,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
 
     /**
      * 更新，忽略null值
-     *
+     * @apiNote 能触发@PreUpdate和@PostUpdate回调，支持乐观锁
      * @param entity 实体
      * @return 影响条数
      */
@@ -68,7 +69,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
 
     /**
      * 更新
-     * @apiNote 能触发@PreUpdate和@PostUpdate回调
+     * @apiNote 能触发@PreUpdate和@PostUpdate回调，支持乐观锁
      * @param entity     实体
      * @param ignoreNull 是否忽略null
      * @return 1-成功
@@ -98,14 +99,35 @@ public interface BaseMapper<T> extends CrudMapper<T> {
      *
      * @param list 数据集合
      * @param size 单批次数量
-     * @return 大于1-成功
+     * @return 大于等于1-成功
      * @apiNote 不忽略null值，不触发乐观锁
      */
     default long updateBatch(List<T> list, Integer size) {
+        TableInfo tableInfo = getTableInfo();
+        Method preUpdate = tableInfo.getPreUpdate();
+        Method postUpdate = tableInfo.getPostUpdate();
         long result = 0;
         for (int i = 0; i < (int) (Math.ceil((double) list.size() / size)); i++) {
             List<T> updateList = list.stream().skip((long) i * size).limit(size).collect(Collectors.toList());
+            if (preUpdate != null) {
+                updateList.forEach(entity -> {
+                    try {
+                        preUpdate.invoke(entity);
+                    } catch (Exception e) {
+                        log.error("@PreUpdate回调失败：", e);
+                    }
+                });
+            }
             result += updateBatch(updateList);
+            if (postUpdate != null) {
+                updateList.forEach(entity -> {
+                    try {
+                        postUpdate.invoke(entity);
+                    } catch (Exception e) {
+                        log.error("@PostUpdate回调失败：", e);
+                    }
+                });
+            }
         }
         return result;
     }
@@ -176,11 +198,39 @@ public interface BaseMapper<T> extends CrudMapper<T> {
         return result;
     }
 
+    /**
+     * 批量新增
+     * @apiNote 能触发@PrePersist和@PostPersist回调
+     * @param list 数据集合
+     * @param size 每批数量
+     * @return 大于等于1-成功
+     */
     default long insertBatch(List<T> list, Integer size) {
         long result = 0;
+        TableInfo tableInfo = getTableInfo();
+        Method prePersist = tableInfo.getPrePersist();
+        Method postPersist = tableInfo.getPostPersist();
         for (int i = 0; i < (Math.ceil((double) list.size() / size)); i++) {
             List<T> insertList = list.stream().skip((long) i * size).limit(size).collect(Collectors.toList());
+            if (prePersist != null) {
+                insertList.forEach(entity -> {
+                    try {
+                        prePersist.invoke(entity);
+                    } catch (Exception e) {
+                        log.error("@PrePersist回调失败：", e);
+                    }
+                });
+            }
             result += insertBatch(insertList);
+            if (postPersist != null) {
+                insertList.forEach(entity -> {
+                    try {
+                        postPersist.invoke(entity);
+                    } catch (Exception e) {
+                        log.error("@PostPersist回调失败：", e);
+                    }
+                });
+            }
         }
         return result;
     }
