@@ -23,7 +23,7 @@ public interface Mapper<T> {
     }
 
     @InsertProvider(value = CrudProvider.class, method = "insertOne")
-    int insertOne(@Param(Params.LIST) T entity);
+    int insertOne(T entity);
 
     @InsertProvider(value = CrudProvider.class, method = "insertBatch")
     long insertBatch(@Param(Params.LIST) List<T> list);
