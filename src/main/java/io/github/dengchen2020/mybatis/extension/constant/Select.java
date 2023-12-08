@@ -11,7 +11,7 @@ public class Select {
 
     public static final String EXISTS = "EXISTS(SELECT 1 ";
 
-    public static final String COUNT = "COUNT(*) ";
+    public static final String COUNT = "COUNT(*) FROM (SELECT 1 ";
 
     public static final String DISTINCT = "DISTINCT ";
 
@@ -24,6 +24,8 @@ public class Select {
     public static final String ON = " ON ";
 
     public static final String GROUP_BY = " GROUP BY ";
+
+    public static final String HAVING = " HAVING ";
 
     public static final String ORDER_BY = " ORDER BY ";
 

@@ -66,8 +66,10 @@ public interface CrudMapper<T> extends Mapper<T> {
     }
 
     default Page selectPage(QueryWrapper wrapper, Page page, Class<?> dataType) {
-        long count = count(wrapper.count());
-        if (count > 0 && page.getSize() > 0) {
+        if(page.isQueryCount()){
+            page.setCount(count(wrapper.count()));
+        }
+        if ((page.getCount() == null || page.getCount() > 0) && page.getSize() > 0) {
             if (wrapper.getColumns() != null && !wrapper.getColumns().isEmpty()) {
                 wrapper.select(wrapper.getColumns().toArray(new String[0]));
             } else {
@@ -80,7 +82,6 @@ public interface CrudMapper<T> extends Mapper<T> {
                 page.setData(selectList(wrapper));
             }
         }
-        page.setCount(count);
         return page;
     }
 

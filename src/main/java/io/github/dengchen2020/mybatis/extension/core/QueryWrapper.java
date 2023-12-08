@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.github.dengchen2020.mybatis.extension.constant.SQL.CLOSE;
+import static io.github.dengchen2020.mybatis.extension.constant.SQL.*;
+import static io.github.dengchen2020.mybatis.extension.constant.SQL.AND;
 import static io.github.dengchen2020.mybatis.extension.constant.Select.*;
 import static io.github.dengchen2020.mybatis.extension.util.ProviderUtils.getTableInfo;
 
@@ -40,6 +41,10 @@ public class QueryWrapper extends Wrapper {
 
     protected String[] groupBys;
 
+    protected boolean having;
+
+    protected List<String> havingConditions = new ArrayList<>();
+
     protected OrderBy orderBy;
 
     protected Integer offset;
@@ -59,9 +64,7 @@ public class QueryWrapper extends Wrapper {
         return this;
     }
 
-    public QueryWrapper select(String... columns) {
-        this.columns = new ArrayList<>(columns.length);
-        this.columns.addAll(new ArrayList<>(Arrays.asList(columns)));
+    public QueryWrapper select() {
         this.count = false;
         this.exists = false;
         this.first = null;
@@ -69,11 +72,27 @@ public class QueryWrapper extends Wrapper {
         return this;
     }
 
+    public QueryWrapper select(String... columns) {
+        this.columns = new ArrayList<>(columns.length);
+        this.columns.addAll(new ArrayList<>(Arrays.asList(columns)));
+        return select();
+    }
+
+    public QueryWrapper select(List<String> columns, String... optionalColumns) {
+        this.columns = new ArrayList<>(columns.size() + optionalColumns.length);
+        this.columns.addAll(columns);
+        if(optionalColumns.length > 0){
+            this.columns.addAll(new ArrayList<>(Arrays.asList(optionalColumns)));
+        }
+        return select();
+    }
+
     /**
      * 根据类中的字段进行查询
-     * @apiNote 可使用@Column、@AS、@Transient等注解辅助查询
+     *
      * @param entityClass 要查询的字段类
      * @return queryWrapper
+     * @apiNote 可使用@Column、@AS、@Transient等注解辅助查询
      */
     public QueryWrapper select(Class<?> entityClass) {
         return select(ProviderUtils.getTableInfo(entityClass).getAllColumn().toArray(new String[0]));
@@ -89,7 +108,7 @@ public class QueryWrapper extends Wrapper {
     public QueryWrapper count() {
         this.count = true;
         this.first = COUNT;
-        this.last = null;
+        this.last = CLOSE + AS + "total";
         return this;
     }
 
@@ -113,6 +132,11 @@ public class QueryWrapper extends Wrapper {
 
     public QueryWrapper groupBy(String... columns) {
         groupBys = columns;
+        return this;
+    }
+
+    public QueryWrapper having() {
+        having = true;
         return this;
     }
 
@@ -168,7 +192,19 @@ public class QueryWrapper extends Wrapper {
 
     @Override
     public QueryWrapper addCondition(final String condition) {
+        if (having) {
+            addHavingCondition(condition);
+            return this;
+        }
         super.addCondition(condition);
+        return this;
+    }
+
+    public Wrapper addHavingCondition(String condition) {
+        if (!havingConditions.isEmpty() && !AND.contentEquals(havingConditions.get(havingConditions.size() - 1)) && !OR.contentEquals(havingConditions.get(havingConditions.size() - 1)) && !AND.equals(condition) && !OR.equals(condition)) {
+            havingConditions.add(AND);
+        }
+        havingConditions.add(condition);
         return this;
     }
 
@@ -191,8 +227,8 @@ public class QueryWrapper extends Wrapper {
     }
 
     @Override
-    public QueryWrapper ge(final String column, final Object value) {
-        super.ge(column, value);
+    public QueryWrapper gt(final String column, final Object value) {
+        super.gt(column, value);
         return this;
     }
 
@@ -215,7 +251,7 @@ public class QueryWrapper extends Wrapper {
     }
 
     @Override
-    public QueryWrapper in(final String column, final String... value) {
+    public QueryWrapper in(final String column, final Object... value) {
         super.in(column, value);
         return this;
     }
@@ -227,7 +263,7 @@ public class QueryWrapper extends Wrapper {
     }
 
     @Override
-    public QueryWrapper notIn(final String column, final String... value) {
+    public QueryWrapper notIn(final String column, final Object... value) {
         super.notIn(column, value);
         return this;
     }

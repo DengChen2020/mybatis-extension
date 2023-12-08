@@ -48,8 +48,8 @@ public class ProviderUtils {
             Set<String> updateColumns = new HashSet<>();
             List<Field> fields = new ArrayList<>();
             Class<?> entitySuperClass = key.getSuperclass();
-            if (entitySuperClass != null && entitySuperClass.getAnnotation(MappedSuperclass.class) != null) {
-                fields.addAll(new ArrayList<>(Arrays.asList(entitySuperClass.getDeclaredFields())));
+            if(entitySuperClass != null){
+                addSuperFields(entitySuperClass,fields);
             }
             fields.addAll(new ArrayList<>(Arrays.asList(key.getDeclaredFields())));
             TableField versionField = null;
@@ -90,6 +90,18 @@ public class ProviderUtils {
             tableInfoMap.put(tableName, tableInfo);
             return tableInfo;
         });
+    }
+
+    /**
+     * 添加父类字段
+     */
+    public static void addSuperFields(Class<?> entitySuperClass, List<Field> fields) {
+        if (entitySuperClass.getSuperclass() != null) {
+            addSuperFields(entitySuperClass.getSuperclass(), fields);
+        }
+        if (entitySuperClass.getAnnotation(MappedSuperclass.class) != null) {
+            fields.addAll(new ArrayList<>(Arrays.asList(entitySuperClass.getDeclaredFields())));
+        }
     }
 
     /**
