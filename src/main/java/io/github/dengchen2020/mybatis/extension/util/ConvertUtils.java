@@ -9,7 +9,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +25,14 @@ public class ConvertUtils {
             .registerModule(new JavaTimeModule().addSerializer(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
                         @Override
                         public void serialize(final LocalDateTime value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
-                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                            gen.writeString(value.format(DateUtils.dateTimeFormatter));
                         }
                     })
             )
             .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, true)
             .setTimeZone(TimeZone.getTimeZone("GMT+08:00"))
-            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"));
 
     public static List<?> convertList(List<Map<String, Object>> inputList, Class<?> targetType) {
         return inputList.stream()
@@ -42,7 +41,7 @@ public class ConvertUtils {
     }
 
     public static Object convertObject(Map<String, Object> inputMap, Class<?> targetType) {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>((int) Math.ceil(inputMap.size() * 2 / (double) 0.75f));
         for (Map.Entry<String, Object> entry : inputMap.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
