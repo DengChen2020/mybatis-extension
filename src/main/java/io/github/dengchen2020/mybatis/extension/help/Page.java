@@ -25,6 +25,11 @@ public class Page {
     private Long count;
 
     /**
+     * 是否查询数量，默认：true
+     */
+    private boolean queryCount = true;
+
+    /**
      * 数据
      */
     private List<?> data;
@@ -32,6 +37,12 @@ public class Page {
     public Page(final Integer page, final Integer size) {
         this.page = page;
         this.size = size;
+    }
+
+    public Page(final Integer page, final Integer size, final boolean queryCount) {
+        this.page = page;
+        this.size = size;
+        this.queryCount = queryCount;
     }
 
     public Integer getPage() {
@@ -68,6 +79,14 @@ public class Page {
 
     public void setData(final List<?> data) {
         this.data = data;
+    }
+
+    public boolean isQueryCount() {
+        return queryCount;
+    }
+
+    public void setQueryCount(final boolean queryCount) {
+        this.queryCount = queryCount;
     }
 
 }

@@ -215,7 +215,7 @@ public class QueryWrapper extends Wrapper {
     }
 
     @Override
-    public QueryWrapper in(final String column, final String... value) {
+    public QueryWrapper in(final String column, final Object... value) {
         super.in(column, value);
         return this;
     }
@@ -227,7 +227,7 @@ public class QueryWrapper extends Wrapper {
     }
 
     @Override
-    public QueryWrapper notIn(final String column, final String... value) {
+    public QueryWrapper notIn(final String column, final Object... value) {
         super.notIn(column, value);
         return this;
     }

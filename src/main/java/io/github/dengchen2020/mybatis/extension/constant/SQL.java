@@ -73,6 +73,8 @@ public class SQL {
 
     public static final String SINGLE_QUOTE = "'";
 
+    public static final String CONCAT = " CONCAT";
+
     public static String ognlParam(String param) {
         return "#{" + param + "}";
     }

@@ -97,7 +97,7 @@ public class UpdateWrapper extends Wrapper {
     }
 
     @Override
-    public UpdateWrapper in(final String column, final String... value) {
+    public UpdateWrapper in(final String column, final Object... value) {
         super.in(column, value);
         return this;
     }
@@ -109,7 +109,7 @@ public class UpdateWrapper extends Wrapper {
     }
 
     @Override
-    public UpdateWrapper notIn(final String column, final String... value) {
+    public UpdateWrapper notIn(final String column, final Object... value) {
         super.notIn(column, value);
         return this;
     }

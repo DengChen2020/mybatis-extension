@@ -66,7 +66,7 @@ public class DeleteWrapper extends Wrapper {
     }
 
     @Override
-    public DeleteWrapper in(final String column, final String... value) {
+    public DeleteWrapper in(final String column, final Object... value) {
         super.in(column, value);
         return this;
     }
@@ -78,7 +78,7 @@ public class DeleteWrapper extends Wrapper {
     }
 
     @Override
-    public DeleteWrapper notIn(final String column, final String... value) {
+    public DeleteWrapper notIn(final String column, final Object... value) {
         super.notIn(column, value);
         return this;
     }

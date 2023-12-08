@@ -1,5 +1,7 @@
 package io.github.dengchen2020.mybatis.extension.core;
 
+import io.github.dengchen2020.mybatis.extension.exception.MybatisCustomException;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -140,7 +142,7 @@ public class Wrapper {
         return add(column, LOE, value);
     }
 
-    public Wrapper in(String column, String... value) {
+    public Wrapper in(String column, Object... value) {
         return in(column, Arrays.stream(value).collect(Collectors.toList()));
     }
 
@@ -148,12 +150,19 @@ public class Wrapper {
         return add(column, IN, list);
     }
 
-    public Wrapper notIn(String column, String... value) {
+    public Wrapper notIn(String column, Object... value) {
         return notIn(column, Arrays.stream(value).collect(Collectors.toList()));
     }
 
     public Wrapper notIn(String column, List<?> list) {
         return add(column, NOT_IN, list);
+    }
+
+    private String checkString(String value) {
+        if (value == null || value.isEmpty()) {
+            throw new MybatisCustomException("条件值不能为空");
+        }
+        return value.replace(PERCENT, "\\" + PERCENT).replace("_", "\\" + PERCENT);
     }
 
     /**
@@ -164,7 +173,7 @@ public class Wrapper {
      * @apiNote like '%value%'
      */
     public Wrapper contains(String column, String value) {
-        return add(column, LIKE + PERCENT, value + PERCENT);
+        return add(column, LIKE + CONCAT + OPEN + SINGLE_QUOTE + PERCENT + SINGLE_QUOTE + COMMA, checkString(value), COMMA + SINGLE_QUOTE + PERCENT + SINGLE_QUOTE + CLOSE);
     }
 
     /**
@@ -175,7 +184,7 @@ public class Wrapper {
      * @apiNote not like '%value%'
      */
     public Wrapper notContains(String column, String value) {
-        return add(column, NOT_LIKE + PERCENT, value, PERCENT);
+        return add(column, NOT_LIKE + CONCAT + OPEN + SINGLE_QUOTE + PERCENT + SINGLE_QUOTE + COMMA, checkString(value), COMMA + SINGLE_QUOTE + PERCENT + SINGLE_QUOTE + CLOSE);
     }
 
     /**
@@ -186,7 +195,7 @@ public class Wrapper {
      * @apiNote like 'value%'
      */
     public Wrapper startsWith(String column, String value) {
-        return add(column, LIKE, value, PERCENT);
+        return add(column, LIKE + CONCAT + OPEN, checkString(value), COMMA + SINGLE_QUOTE + PERCENT + SINGLE_QUOTE + CLOSE);
     }
 
     /**
@@ -197,7 +206,7 @@ public class Wrapper {
      * @apiNote not like 'value%'
      */
     public Wrapper notStartsWith(String column, String value) {
-        return add(column, NOT_LIKE, value, PERCENT);
+        return add(column, NOT_LIKE + CONCAT + OPEN, checkString(value), COMMA + SINGLE_QUOTE + PERCENT + SINGLE_QUOTE + CLOSE);
     }
 
     /**
@@ -208,7 +217,7 @@ public class Wrapper {
      * @apiNote not like '%value'
      */
     public Wrapper endsWith(String column, String value) {
-        return add(column, LIKE + PERCENT, value);
+        return add(column, LIKE + CONCAT + OPEN + SINGLE_QUOTE + PERCENT + SINGLE_QUOTE + COMMA, checkString(value), CLOSE);
     }
 
     /**
@@ -219,7 +228,7 @@ public class Wrapper {
      * @apiNote not like '%value'
      */
     public Wrapper notEndsWith(String column, String value) {
-        return add(column, NOT_LIKE + PERCENT, value);
+        return add(column, NOT_LIKE + CONCAT + OPEN + SINGLE_QUOTE + PERCENT + SINGLE_QUOTE + COMMA, checkString(value), CLOSE);
     }
 
     public Wrapper isNull(String column) {
@@ -239,7 +248,7 @@ public class Wrapper {
     }
 
     public Wrapper isUnknown(String column) {
-        return add(column, IS_FALSE);
+        return add(column, IS_UNKNOWN);
     }
 
     public Wrapper regexp(String column, String value) {
