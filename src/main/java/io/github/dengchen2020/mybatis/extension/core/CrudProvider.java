@@ -77,10 +77,10 @@ public class CrudProvider {
                         updateSqlBuilder.addCondition(version + EQ + num);
                         metaObject.setValue(fieldName, num + 1);
                     } else if (value instanceof Date) {
-                        updateSqlBuilder.addCondition(version + EQ + SINGLE_QUOTE + DateUtils.parse((Date) value) + SINGLE_QUOTE);
+                        updateSqlBuilder.addCondition(version + EQ + SINGLE_QUOTE + DateUtils.format((Date) value) + SINGLE_QUOTE);
                         metaObject.setValue(fieldName, new Date());
                     } else if (value instanceof LocalDateTime) {
-                        updateSqlBuilder.addCondition(version + EQ + SINGLE_QUOTE + DateUtils.parse((LocalDateTime) value) + SINGLE_QUOTE);
+                        updateSqlBuilder.addCondition(version + EQ + SINGLE_QUOTE + DateUtils.format((LocalDateTime) value) + SINGLE_QUOTE);
                         metaObject.setValue(fieldName, LocalDateTime.now());
                     }
                 }

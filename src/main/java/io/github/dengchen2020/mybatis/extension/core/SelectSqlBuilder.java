@@ -35,6 +35,7 @@ class SelectSqlBuilder extends QueryWrapper {
         this.conditions = wrapper.conditions;
         this.args = wrapper.args;
         this.paramName = wrapper.paramName;
+        this.havingConditions = wrapper.havingConditions;
     }
 
     private String tableName;
@@ -75,7 +76,10 @@ class SelectSqlBuilder extends QueryWrapper {
             rightJoinList.forEach(rightJoin -> sqlBuilder.append(RIGHT_JOIN).append(rightJoin.getTable()).append(ON).append(rightJoin.getLeftColumn()).append(EQ).append(rightJoin.getRightColumn()));
         if (!conditions.isEmpty()) sqlBuilder.append(WHERE).append(where());
         if (!exists) {
-            if (groupBys != null) sqlBuilder.append(GROUP_BY).append(String.join(COMMA, groupBys));
+            if (groupBys != null) {
+                sqlBuilder.append(GROUP_BY).append(String.join(COMMA, groupBys));
+                if (!havingConditions.isEmpty()) sqlBuilder.append(HAVING).append(String.join(SPACE, havingConditions));
+            }
             if (!count) {
                 if (orderBy != null)
                     sqlBuilder.append(ORDER_BY).append(String.join(COMMA, orderBy.getColumn())).append(orderBy.getOrderType());
