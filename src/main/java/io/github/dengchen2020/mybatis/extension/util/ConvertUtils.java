@@ -3,6 +3,8 @@ package io.github.dengchen2020.mybatis.extension.util;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -19,6 +21,12 @@ import java.util.stream.Collectors;
 public class ConvertUtils {
 
     static ObjectMapper objectMapper = new ObjectMapper()
+            .setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+                @Override
+                public boolean hasIgnoreMarker(final AnnotatedMember m) {
+                    return false;
+                }
+            })
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -32,6 +40,18 @@ public class ConvertUtils {
     }
 
     public static Object convertObject(Map<String, Object> inputMap, Class<?> targetType) {
+        if (targetType.isInstance(inputMap)) {
+            return inputMap;
+        }
+        if (inputMap.size() == 1) {
+            for (Map.Entry<String, Object> entry : inputMap.entrySet()) {
+                Object value = entry.getValue();
+                if (value.getClass() == targetType) {
+                    return value;
+                }
+                return objectMapper.convertValue(value, targetType);
+            }
+        }
         Map<String, Object> map = new HashMap<>((int) Math.ceil(inputMap.size() * 2 / (double) 0.75f));
         for (Map.Entry<String, Object> entry : inputMap.entrySet()) {
             String key = entry.getKey();

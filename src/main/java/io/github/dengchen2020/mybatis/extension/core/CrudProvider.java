@@ -13,6 +13,7 @@ import java.util.*;
 import static io.github.dengchen2020.mybatis.extension.constant.SQL.EQ;
 import static io.github.dengchen2020.mybatis.extension.constant.SQL.SINGLE_QUOTE;
 import static io.github.dengchen2020.mybatis.extension.core.Provider.*;
+import static io.github.dengchen2020.mybatis.extension.util.ProviderUtils.getMetaObject;
 
 /**
  * 执行通用CRUD操作的sql生成
@@ -27,13 +28,13 @@ public class CrudProvider {
     public static String insertOne(ProviderContext context) {
         TableInfo tableInfo = getTableInfo(context);
         return InsertSqlBuilder.builder().insert(tableInfo.getTableName())
-                .column(tableInfo.getAllColumn()).toString();
+                .column("auto".equals(tableInfo.getGeneratedValue()) ? tableInfo.getAllColumn() : tableInfo.getUpdateColumns()).toString();
     }
 
     public static String insertBatch(ProviderContext context, Map<String, Object> params) {
         TableInfo tableInfo = getTableInfo(context);
         return BatchInsertSqlBuilder.builder().insert(tableInfo.getTableName())
-                .column(tableInfo.getAllColumn(), ((List<?>) params.get(Params.LIST)).size()).toString();
+                .column("auto".equals(tableInfo.getGeneratedValue()) ? tableInfo.getAllColumn() : tableInfo.getUpdateColumns(), ((List<?>) params.get(Params.LIST)).size()).toString();
     }
 
     public static String update(ProviderContext context, Map<String, Object> params) {
@@ -51,7 +52,7 @@ public class CrudProvider {
         Object id;
         if (metaObject.hasGetter(tableInfo.getIdField())) {
             id = metaObject.getValue(tableInfo.getIdField());
-            updateSqlBuilder.eq(tableInfo.getIdField(), id);
+            updateSqlBuilder.eq(tableInfo.getIdColumn(), id);
         } else {
             throw new MybatisCustomException("更新必须设置id");
         }
@@ -90,12 +91,36 @@ public class CrudProvider {
             }
         }
         return updateSqlBuilder.update(tableInfo.getTableName())
-                .set(updateColumns).toString();
+                .set(columns).toString();
     }
 
     public static String updateBatch(ProviderContext context, Map<String, Object> params) {
         TableInfo tableInfo = getTableInfo(context);
-        return BatchUpdateSqlUpdate.builder().update(tableInfo.getTableName()).set(tableInfo.getUpdateColumns(), ((List<?>) params.get(Params.LIST)).size()).toString();
+        List<String> updateColumns = tableInfo.getUpdateColumns();
+        List<?> list = ((List<?>) params.get(Params.LIST));
+        boolean ignoreNull = params.containsKey(Params.IGNORE_NULL) && (boolean) params.get(Params.IGNORE_NULL);
+        List<List<String>> columnList = new ArrayList<>();
+        if(ignoreNull){
+            for (final Object entity : list) {
+                MetaObject metaObject = getMetaObject(entity);
+                List<String> columns = new ArrayList<>(updateColumns);
+                for (Iterator<String> iterator = columns.iterator(); iterator.hasNext(); ) {
+                    String column = iterator.next();
+                    String fieldName = tableInfo.getField(column);
+                    Object value = null;
+                    if (metaObject.hasGetter(fieldName)) {
+                        value = metaObject.getValue(fieldName);
+                    }
+                    if (Objects.isNull(value)) {
+                        iterator.remove();
+                    }
+                }
+                columnList.add(columns);
+            }
+        }else {
+            list.forEach(entity -> columnList.add(updateColumns));
+        }
+        return BatchUpdateSqlUpdate.builder().update(tableInfo.getTableName(), columnList).toString();
     }
 
     public static String delete(ProviderContext context, Map<String, Object> params) {

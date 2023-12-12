@@ -4,7 +4,6 @@ import io.github.dengchen2020.mybatis.extension.constant.Params;
 import io.github.dengchen2020.mybatis.extension.constant.Update;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,26 +23,18 @@ class BatchUpdateSqlUpdate extends UpdateSqlBuilder {
         return new BatchUpdateSqlUpdate();
     }
 
-    public BatchUpdateSqlUpdate update(String tableName) {
+    public BatchUpdateSqlUpdate update(String tableName,List<List<String>> columns) {
         super.update(tableName);
+        sets = foreachSetParam(columns, getTableInfo(tableName)::getField);
         return this;
     }
 
-    public BatchUpdateSqlUpdate set(String[] columns, Integer size) {
-        return set(new ArrayList<>(Arrays.asList(columns)), size);
-    }
-
-    public BatchUpdateSqlUpdate set(List<String> columns, Integer size) {
-        sets = foreachSetParam(size, columns, getTableInfo(tableName)::getField, EQ);
-        return this;
-    }
-
-    private List<String> foreachSetParam(Integer size, List<String> columns, Function<String, String> function, String oper) {
-        return IntStream.range(0, size)
-                .mapToObj(i -> columns.stream()
-                        .map(column -> column + oper + ognlParam(Params.LIST + forListParam(i) + function.apply(column)))
-                        .collect(Collectors.joining(COMMA)))
-                .collect(Collectors.toList());
+    private List<String> foreachSetParam(List<List<String>> columns, Function<String, String> function) {
+        List<String> list = new ArrayList<>();
+        IntStream.range(0, columns.size()).forEach(i -> list.add(columns.get(i).stream()
+                .map(column -> column + EQ + ognlParam(Params.LIST + forListParam(i) + function.apply(column)))
+                .collect(Collectors.joining(COMMA))));
+        return list;
     }
 
     @Override

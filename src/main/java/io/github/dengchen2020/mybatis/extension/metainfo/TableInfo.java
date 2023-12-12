@@ -13,12 +13,13 @@ import java.util.Map;
  */
 public class TableInfo {
 
-    public TableInfo(final Map<String, String> columnCacheMap, final Map<String, String> fieldCacheMap, final String tableName, final String idField, final String idColumn, final List<String> allColumn, final List<String> updateColumns, Map<String,Method> callbackMethodMap, final TableField versionField) {
+    public TableInfo(final Map<String, String> columnCacheMap, final Map<String, String> fieldCacheMap, final String tableName, final String idField, final String idColumn, final String generatedValue, final List<String> allColumn, final List<String> updateColumns, Map<String,Method> callbackMethodMap, final TableField versionField) {
         this.columnCacheMap = columnCacheMap;
         this.fieldCacheMap = fieldCacheMap;
         this.tableName = tableName;
         this.idField = idField;
         this.idColumn = idColumn;
+        this.generatedValue = generatedValue;
         this.allColumn = allColumn;
         this.updateColumns = updateColumns;
         this.callbackMethodMap = callbackMethodMap;
@@ -43,6 +44,11 @@ public class TableInfo {
      * 主键映射列
      */
     private final String idColumn;
+
+    /**
+     * 主键生成策略
+     */
+    private final String generatedValue;
 
     /**
      * 所有字段
@@ -90,6 +96,10 @@ public class TableInfo {
 
     public String getIdColumn() {
         return idColumn;
+    }
+
+    public String getGeneratedValue() {
+        return generatedValue;
     }
 
     public List<String> getAllColumn() {
