@@ -32,6 +32,18 @@ public class ConvertUtils {
     }
 
     public static Object convertObject(Map<String, Object> inputMap, Class<?> targetType) {
+        if (targetType.isInstance(inputMap)) {
+            return inputMap;
+        }
+        if (inputMap.size() == 1) {
+            for (Map.Entry<String, Object> entry : inputMap.entrySet()) {
+                Object value = entry.getValue();
+                if (value.getClass() == targetType) {
+                    return value;
+                }
+                return objectMapper.convertValue(value, targetType);
+            }
+        }
         Map<String, Object> map = new HashMap<>((int) Math.ceil(inputMap.size() * 2 / (double) 0.75f));
         for (Map.Entry<String, Object> entry : inputMap.entrySet()) {
             String key = entry.getKey();

@@ -81,7 +81,7 @@ public class QueryWrapper extends Wrapper {
     public QueryWrapper select(List<String> columns, String... optionalColumns) {
         this.columns = new ArrayList<>(columns.size() + optionalColumns.length);
         this.columns.addAll(columns);
-        if(optionalColumns.length > 0){
+        if (optionalColumns.length > 0) {
             this.columns.addAll(new ArrayList<>(Arrays.asList(optionalColumns)));
         }
         return select();
@@ -112,22 +112,34 @@ public class QueryWrapper extends Wrapper {
         return this;
     }
 
-    public QueryWrapper leftJoin(Class<?> entityClass, String leftColumn, String rightColumn) {
+    public QueryWrapper leftJoin(String tableName, String leftColumn, String rightColumn) {
         if (leftJoinList == null || leftJoinList.isEmpty()) leftJoinList = new ArrayList<>();
-        leftJoinList.add(new Join(getTableInfo(entityClass).getTableName(), leftColumn, rightColumn));
+        leftJoinList.add(new Join(tableName, leftColumn, rightColumn));
+        return this;
+    }
+
+    public QueryWrapper leftJoin(Class<?> entityClass, String leftColumn, String rightColumn) {
+        return leftJoin(getTableInfo(entityClass).getTableName(), leftColumn, rightColumn);
+    }
+
+    public QueryWrapper innerJoin(String tableName, String leftColumn, String rightColumn) {
+        if (innerJoinList == null || innerJoinList.isEmpty()) innerJoinList = new ArrayList<>();
+        innerJoinList.add(new Join(tableName, leftColumn, rightColumn));
         return this;
     }
 
     public QueryWrapper innerJoin(Class<?> entityClass, String leftColumn, String rightColumn) {
-        if (innerJoinList == null || innerJoinList.isEmpty()) innerJoinList = new ArrayList<>();
-        innerJoinList.add(new Join(getTableInfo(entityClass).getTableName(), leftColumn, rightColumn));
+        return innerJoin(getTableInfo(entityClass).getTableName(), leftColumn, rightColumn);
+    }
+
+    public QueryWrapper rightJoin(String tableName, String leftColumn, String rightColumn) {
+        if (rightJoinList == null || rightJoinList.isEmpty()) rightJoinList = new ArrayList<>();
+        rightJoinList.add(new Join(tableName, leftColumn, rightColumn));
         return this;
     }
 
     public QueryWrapper rightJoin(Class<?> entityClass, String leftColumn, String rightColumn) {
-        if (rightJoinList == null || rightJoinList.isEmpty()) rightJoinList = new ArrayList<>();
-        rightJoinList.add(new Join(getTableInfo(entityClass).getTableName(), leftColumn, rightColumn));
-        return this;
+        return rightJoin(getTableInfo(entityClass).getTableName(), leftColumn, rightColumn);
     }
 
     public QueryWrapper groupBy(String... columns) {
