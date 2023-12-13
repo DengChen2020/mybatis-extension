@@ -26,7 +26,7 @@ public interface Mapper<T> {
     int insertOne(T entity);
 
     @InsertProvider(value = CrudProvider.class, method = "insertBatch")
-    long insertBatch(@Param(Params.LIST) List<T> list);
+    int insertBatch(@Param(Params.LIST) List<T> list);
 
     @UpdateProvider(value = CrudProvider.class, method = "updateOne")
     int updateOne(@Param(Params.ENTITY) T entity, @Param(Params.IGNORE_NULL) boolean ignoreNull);

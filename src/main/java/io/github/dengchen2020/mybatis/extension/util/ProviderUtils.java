@@ -6,6 +6,13 @@ import io.github.dengchen2020.mybatis.extension.constant.SQL;
 import io.github.dengchen2020.mybatis.extension.metainfo.TableField;
 import io.github.dengchen2020.mybatis.extension.metainfo.TableInfo;
 import jakarta.persistence.*;
+import org.apache.ibatis.reflection.DefaultReflectorFactory;
+import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.reflection.ReflectorFactory;
+import org.apache.ibatis.reflection.factory.DefaultObjectFactory;
+import org.apache.ibatis.reflection.factory.ObjectFactory;
+import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
+import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -22,6 +29,16 @@ public class ProviderUtils {
     private static final ConcurrentMap<Class<?>, TableInfo> mapperTableInfoMap = new ConcurrentHashMap<>();
 
     private static final ConcurrentMap<String, TableInfo> tableInfoMap = new ConcurrentHashMap<>();
+
+    static ObjectFactory objectFactory = new DefaultObjectFactory();
+
+    static ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
+
+    static ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
+
+    public static MetaObject getMetaObject(Object entity) {
+        return MetaObject.forObject(entity, objectFactory, objectWrapperFactory, reflectorFactory);
+    }
 
     /**
      * 获取表信息
@@ -53,6 +70,7 @@ public class ProviderUtils {
             }
             fields.addAll(new ArrayList<>(Arrays.asList(key.getDeclaredFields())));
             TableField versionField = null;
+            String generatedValueStr = "auto";
             for (final Field field : fields) {
                 if (shouldBeIgnoredField(field)) {
                     continue;
@@ -70,6 +88,12 @@ public class ProviderUtils {
                 if (hasIdAnnotation(field)) {
                     idField = field.getName();
                     idColumn = getId(field);
+                    GeneratedValue generatedValue = field.getAnnotation(GeneratedValue.class);
+                    if(generatedValue != null){
+                        if(generatedValue.strategy() != GenerationType.AUTO){
+                            generatedValueStr = "identity";
+                        }
+                    }
                 } else {
                     updateColumns.add(column);
                 }
@@ -86,7 +110,7 @@ public class ProviderUtils {
             for (Method method : methods) {
                 saveCallbackMethod(method, callbackMethodMap);
             }
-            TableInfo tableInfo = new TableInfo(columnCacheMap, fieldCacheMap, tableName, idField, idColumn, new ArrayList<>(columns), new ArrayList<>(updateColumns), callbackMethodMap, versionField);
+            TableInfo tableInfo = new TableInfo(columnCacheMap, fieldCacheMap, tableName, idField, idColumn, generatedValueStr, new ArrayList<>(columns), new ArrayList<>(updateColumns), callbackMethodMap, versionField);
             tableInfoMap.put(tableName, tableInfo);
             return tableInfo;
         });

@@ -3,13 +3,6 @@ package io.github.dengchen2020.mybatis.extension.core;
 import io.github.dengchen2020.mybatis.extension.constant.Params;
 import io.github.dengchen2020.mybatis.extension.metainfo.TableInfo;
 import org.apache.ibatis.builder.annotation.ProviderContext;
-import org.apache.ibatis.reflection.DefaultReflectorFactory;
-import org.apache.ibatis.reflection.MetaObject;
-import org.apache.ibatis.reflection.ReflectorFactory;
-import org.apache.ibatis.reflection.factory.DefaultObjectFactory;
-import org.apache.ibatis.reflection.factory.ObjectFactory;
-import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
-import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 import java.util.Map;
 
@@ -24,16 +17,6 @@ public class Provider {
 
     protected static TableInfo getTableInfo(ProviderContext context) {
         return getTableInfoByMapper(context.getMapperType());
-    }
-
-    static ObjectFactory objectFactory = new DefaultObjectFactory();
-
-    static ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
-
-    static ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
-
-    public static MetaObject getMetaObject(Object entity) {
-        return MetaObject.forObject(entity, objectFactory, objectWrapperFactory, reflectorFactory);
     }
 
     @SuppressWarnings("unchecked")
