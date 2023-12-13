@@ -9,9 +9,7 @@ import org.apache.ibatis.logging.LogFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -25,9 +23,11 @@ public interface BaseMapper<T> extends CrudMapper<T> {
 
     /**
      * 根据id查询
+     *
      * @apiNote 能触发@PostLoad回调
      */
     default Optional<T> findById(Serializable id) {
+        if (Objects.isNull(id)) throw new IllegalArgumentException("id不能为null");
         long startTime = System.currentTimeMillis();
         T entity = selectById(id);
         long time = (System.currentTimeMillis() - startTime);
@@ -46,6 +46,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
     }
 
     default boolean existsById(Serializable id) {
+        if (Objects.isNull(id)) throw new IllegalArgumentException("id不能为null");
         return exists(QueryWrapper.create().exists().eq(getTableInfo().getIdColumn(), id));
     }
 
@@ -53,28 +54,32 @@ public interface BaseMapper<T> extends CrudMapper<T> {
         return selectList();
     }
 
-    default List<T> findAllById(List<Serializable> list) {
-        return selectList(QueryWrapper.create().in(getTableInfo().getIdColumn(), list));
+    default List<T> findAllById(List<?> ids) {
+        if (Objects.isNull(ids) || ids.contains(null)) throw new IllegalArgumentException("ids不能为null或包含null");
+        return selectList(QueryWrapper.create().in(getTableInfo().getIdColumn(), ids));
     }
 
     /**
      * 更新，忽略null值
-     * @apiNote 能触发@PreUpdate和@PostUpdate回调，支持乐观锁
+     *
      * @param entity 实体
      * @return 影响条数
+     * @apiNote 能触发@PreUpdate和@PostUpdate回调，支持乐观锁
      */
-    default long update(T entity) {
+    default int update(T entity) {
         return update(entity, true);
     }
 
     /**
      * 更新
-     * @apiNote 能触发@PreUpdate和@PostUpdate回调，支持乐观锁
+     *
      * @param entity     实体
      * @param ignoreNull 是否忽略null
      * @return 1-成功
+     * @apiNote 能触发@PreUpdate和@PostUpdate回调，支持乐观锁
      */
-    default long update(T entity, boolean ignoreNull) {
+    default int update(T entity, boolean ignoreNull) {
+        if (Objects.isNull(entity)) throw new IllegalArgumentException("entity不能为null");
         TableInfo tableInfo = getTableInfo();
         if (tableInfo.getPreUpdate() != null) {
             try {
@@ -83,7 +88,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
                 log.error("@PreUpdate回调失败：", e);
             }
         }
-        long result = updateOne(entity, ignoreNull);
+        int result = updateOne(entity, ignoreNull);
         if (tableInfo.getPostUpdate() != null) {
             try {
                 tableInfo.getPostUpdate().invoke(entity);
@@ -99,10 +104,12 @@ public interface BaseMapper<T> extends CrudMapper<T> {
      *
      * @param list 数据集合
      * @param size 单批次数量
-     * @return 大于等于1-成功
-     * @apiNote 不忽略null值，不触发乐观锁
+     * @return 大于0-成功
+     * @apiNote 不忽略null值，不触发乐观锁，url需加allowMultiQueries=true
      */
     default long updateBatch(List<T> list, Integer size) {
+        if (Objects.isNull(list) || list.contains(null)) throw new IllegalArgumentException("list不能为null或包含null");
+        if (list.isEmpty()) return 0;
         TableInfo tableInfo = getTableInfo();
         Method preUpdate = tableInfo.getPreUpdate();
         Method postUpdate = tableInfo.getPostUpdate();
@@ -118,7 +125,9 @@ public interface BaseMapper<T> extends CrudMapper<T> {
                     }
                 });
             }
-            result += updateBatch(updateList);
+            if (updateBatch(updateList) > 0) {
+                result += updateList.size();
+            }
             if (postUpdate != null) {
                 updateList.forEach(entity -> {
                     try {
@@ -132,7 +141,8 @@ public interface BaseMapper<T> extends CrudMapper<T> {
         return result;
     }
 
-    default int delete(List<Serializable> ids) {
+    default long delete(List<?> ids) {
+        if (Objects.isNull(ids) || ids.contains(null)) throw new IllegalArgumentException("ids不能为null或包含null");
         if (ids.isEmpty()) {
             return 0;
         }
@@ -145,13 +155,12 @@ public interface BaseMapper<T> extends CrudMapper<T> {
 
     /**
      * 根据id删除
-     * @apiNote 能触发@PreRemove和@PostRemove回调
+     *
      * @return 受影响的行数
+     * @apiNote 能触发@PreRemove和@PostRemove回调
      */
     default int deleteById(Serializable id) {
-        if (Objects.isNull(id)) {
-            return 0;
-        }
+        if (Objects.isNull(id)) throw new IllegalArgumentException("id不能为null");
         Object entity = null;
         TableInfo tableInfo = getTableInfo();
         if (tableInfo.getPreRemove() != null) {
@@ -162,7 +171,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
                 log.error("@PreRemove回调失败：", e);
             }
         }
-        int result = delete(DeleteWrapper.create().eq(getTableInfo().getIdColumn(), id));
+        int result = Math.toIntExact(delete(DeleteWrapper.create().eq(getTableInfo().getIdColumn(), id)));
         if (tableInfo.getPostRemove() != null) {
             try {
                 if (entity == null) entity = selectById(id);
@@ -176,9 +185,12 @@ public interface BaseMapper<T> extends CrudMapper<T> {
 
     /**
      * 新增
-     * @apiNote 能触发@PrePersist和@PostPersist回调
+     *
+     * @apiNote 能触发@PrePersist和@PostPersist回调。如使用自增主键策略时需要返回自增id，需重写insertOne，添加@Options(useGeneratedKeys = true,keyProperty = "id")
+     * @see Mapper#insertOne(Object)
      */
-    default long insert(T entity) {
+    default int insert(T entity) {
+        if (Objects.isNull(entity)) throw new IllegalArgumentException("entity不能为null");
         TableInfo tableInfo = getTableInfo();
         if (tableInfo.getPrePersist() != null) {
             try {
@@ -187,7 +199,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
                 log.error("@PrePersist回调失败：", e);
             }
         }
-        long result = insertOne(entity);
+        int result = insertOne(entity);
         if (tableInfo.getPostPersist() != null) {
             try {
                 tableInfo.getPostPersist().invoke(entity);
@@ -200,12 +212,16 @@ public interface BaseMapper<T> extends CrudMapper<T> {
 
     /**
      * 批量新增
-     * @apiNote 能触发@PrePersist和@PostPersist回调
+     *
      * @param list 数据集合
      * @param size 每批数量
-     * @return 大于等于1-成功
+     * @return 大于0-成功
+     * @apiNote 能触发@PrePersist和@PostPersist回调。如使用自增主键策略时需要返回自增id，需重写insertBatch，添加@Options(useGeneratedKeys = true,keyProperty = "id")
+     * @see Mapper#insertBatch(List)
      */
     default long insertBatch(List<T> list, Integer size) {
+        if (Objects.isNull(list) || list.contains(null)) throw new IllegalArgumentException("list不能为null或包含null");
+        if (list.isEmpty()) return 0;
         long result = 0;
         TableInfo tableInfo = getTableInfo();
         Method prePersist = tableInfo.getPrePersist();
@@ -221,7 +237,9 @@ public interface BaseMapper<T> extends CrudMapper<T> {
                     }
                 });
             }
-            result += insertBatch(insertList);
+            if (insertBatch(insertList) > 0) {
+                result += insertList.size();
+            }
             if (postPersist != null) {
                 insertList.forEach(entity -> {
                     try {

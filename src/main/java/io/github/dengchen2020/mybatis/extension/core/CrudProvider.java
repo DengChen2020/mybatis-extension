@@ -13,6 +13,7 @@ import java.util.*;
 import static io.github.dengchen2020.mybatis.extension.constant.SQL.EQ;
 import static io.github.dengchen2020.mybatis.extension.constant.SQL.SINGLE_QUOTE;
 import static io.github.dengchen2020.mybatis.extension.core.Provider.*;
+import static io.github.dengchen2020.mybatis.extension.util.ProviderUtils.getMetaObject;
 
 /**
  * 执行通用CRUD操作的sql生成
@@ -27,13 +28,13 @@ public class CrudProvider {
     public static String insertOne(ProviderContext context) {
         TableInfo tableInfo = getTableInfo(context);
         return InsertSqlBuilder.builder().insert(tableInfo.getTableName())
-                .column(tableInfo.getAllColumn()).toString();
+                .column("auto".equals(tableInfo.getGeneratedValue()) ? tableInfo.getAllColumn() : tableInfo.getUpdateColumns()).toString();
     }
 
     public static String insertBatch(ProviderContext context, Map<String, Object> params) {
         TableInfo tableInfo = getTableInfo(context);
         return BatchInsertSqlBuilder.builder().insert(tableInfo.getTableName())
-                .column(tableInfo.getAllColumn(), ((List<?>) params.get(Params.LIST)).size()).toString();
+                .column("auto".equals(tableInfo.getGeneratedValue()) ? tableInfo.getAllColumn() : tableInfo.getUpdateColumns(), ((List<?>) params.get(Params.LIST)).size()).toString();
     }
 
     public static String update(ProviderContext context, Map<String, Object> params) {
@@ -51,7 +52,7 @@ public class CrudProvider {
         Object id;
         if (metaObject.hasGetter(tableInfo.getIdField())) {
             id = metaObject.getValue(tableInfo.getIdField());
-            updateSqlBuilder.eq(tableInfo.getIdField(), id);
+            updateSqlBuilder.eq(tableInfo.getIdColumn(), id);
         } else {
             throw new MybatisCustomException("更新必须设置id");
         }

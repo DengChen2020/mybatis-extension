@@ -16,18 +16,20 @@ import org.apache.ibatis.cursor.Cursor;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 提供通用的CRUD接口
+ *
  * @author dengchen
  */
 public interface CrudMapper<T> extends Mapper<T> {
 
     @UpdateProvider(value = CrudProvider.class, method = "update")
-    int update(@Param(Params.WRAPPER) UpdateWrapper builder);
+    long update(@Param(Params.WRAPPER) UpdateWrapper builder);
 
     @DeleteProvider(value = CrudProvider.class, method = "delete")
-    int delete(@Param(Params.WRAPPER) DeleteWrapper builder);
+    long delete(@Param(Params.WRAPPER) DeleteWrapper builder);
 
     @SelectProvider(value = CrudProvider.class, method = "count")
     long count(@Param(Params.WRAPPER) QueryWrapper wrapper);
@@ -55,18 +57,21 @@ public interface CrudMapper<T> extends Mapper<T> {
 
     @SuppressWarnings("unchecked")
     default <R> List<R> selectList(QueryWrapper wrapper, Class<R> entityClass) {
+        if (Objects.isNull(wrapper) || Objects.isNull(entityClass)) throw new IllegalArgumentException("wrapper或entityClass不能为null");
         return (List<R>) ConvertUtils.convertList(selectObjectList(wrapper), entityClass);
     }
 
     @SuppressWarnings("unchecked")
     default <R> R selectOne(QueryWrapper wrapper, Class<R> entityClass) {
+        if (Objects.isNull(wrapper) || Objects.isNull(entityClass)) throw new IllegalArgumentException("wrapper或entityClass不能为null");
         Map<String, Object> result = selectObject(wrapper);
         if (result == null) return null;
         return (R) ConvertUtils.convertObject(result, entityClass);
     }
 
     default Page selectPage(QueryWrapper wrapper, Page page, Class<?> dataType) {
-        if(page.isQueryCount()){
+        if (Objects.isNull(wrapper) || Objects.isNull(page)) throw new IllegalArgumentException("wrapper或page不能为null");
+        if (page.isQueryCount()) {
             page.setCount(count(wrapper.count()));
         }
         if ((page.getCount() == null || page.getCount() > 0) && page.getSize() > 0) {
