@@ -3,6 +3,8 @@ package io.github.dengchen2020.mybatis.extension.util;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -19,6 +21,12 @@ import java.util.stream.Collectors;
 public class ConvertUtils {
 
     static ObjectMapper objectMapper = new ObjectMapper()
+            .setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+                @Override
+                public boolean hasIgnoreMarker(final AnnotatedMember m) {
+                    return false;
+                }
+            })
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
