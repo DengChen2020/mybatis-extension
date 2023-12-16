@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.dengchen2020</groupId>
   <artifactId>mybatis-extension</artifactId>
-  <version>1.0.5</version>
+  <version>1.0.6</version>
   <name>mybatis-extension</name>
   <packaging>jar</packaging>
 
