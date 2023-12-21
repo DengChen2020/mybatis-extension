@@ -1,12 +1,10 @@
 package io.github.dengchen2020.mybatis.extension.core;
 
 import io.github.dengchen2020.mybatis.extension.constant.Params;
-import io.github.dengchen2020.mybatis.extension.exception.MybatisCustomException;
 import io.github.dengchen2020.mybatis.extension.constant.Update;
+import io.github.dengchen2020.mybatis.extension.exception.MybatisCustomException;
 import io.github.dengchen2020.mybatis.extension.metainfo.TableInfo;
 import io.github.dengchen2020.mybatis.extension.util.ProviderUtils;
-import org.apache.ibatis.logging.Log;
-import org.apache.ibatis.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +19,6 @@ import static io.github.dengchen2020.mybatis.extension.util.ProviderUtils.getTab
  * @author dengchen
  */
 class UpdateSqlBuilder extends UpdateWrapper {
-
-    Log log = LogFactory.getLog(this.getClass());
 
     public UpdateSqlBuilder() {
         super();

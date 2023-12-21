@@ -32,6 +32,6 @@ public interface Mapper<T> {
     int updateOne(@Param(Params.ENTITY) T entity, @Param(Params.IGNORE_NULL) boolean ignoreNull);
 
     @UpdateProvider(value = CrudProvider.class, method = "updateBatch")
-    int updateBatch(@Param(Params.LIST) List<T> list);
+    int updateBatch(@Param(Params.LIST) List<T> list, @Param(Params.IGNORE_NULL) boolean ignoreNull);
 
 }

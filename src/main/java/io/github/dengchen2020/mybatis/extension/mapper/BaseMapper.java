@@ -105,9 +105,22 @@ public interface BaseMapper<T> extends CrudMapper<T> {
      * @param list 数据集合
      * @param size 单批次数量
      * @return 大于0-成功
-     * @apiNote 不忽略null值，不触发乐观锁，url需加allowMultiQueries=true
+     * @apiNote 忽略null值，不触发乐观锁，url需加allowMultiQueries=true
      */
     default long updateBatch(List<T> list, Integer size) {
+        return updateBatch(list, size, true);
+    }
+
+    /**
+     * 批量更新
+     *
+     * @param list 数据集合
+     * @param size 单批次数量
+     * @param ignoreNull 是否忽略null值
+     * @return 大于0-成功
+     * @apiNote 不触发乐观锁，url需加allowMultiQueries=true
+     */
+    default long updateBatch(List<T> list, Integer size, boolean ignoreNull) {
         if (Objects.isNull(list) || list.contains(null)) throw new IllegalArgumentException("list不能为null或包含null");
         if (list.isEmpty()) return 0;
         TableInfo tableInfo = getTableInfo();
@@ -125,7 +138,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
                     }
                 });
             }
-            if (updateBatch(updateList) > 0) {
+            if (updateBatch(updateList, ignoreNull) > 0) {
                 result += updateList.size();
             }
             if (postUpdate != null) {

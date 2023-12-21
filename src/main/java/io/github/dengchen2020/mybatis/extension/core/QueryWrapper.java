@@ -20,8 +20,7 @@ import static io.github.dengchen2020.mybatis.extension.util.ProviderUtils.getTab
  */
 public class QueryWrapper extends Wrapper {
 
-    protected QueryWrapper() {
-    }
+    public QueryWrapper() {}
 
     protected String first;
 
