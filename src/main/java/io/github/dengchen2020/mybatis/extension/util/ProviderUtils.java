@@ -277,24 +277,31 @@ public class ProviderUtils {
      */
     private static void saveCallbackMethod(Method method, Map<String, Method> callbackMethodMap) {
         if (callbackMethodMap.get(Callback.PRE_PERSIST) == null && method.getAnnotation(PrePersist.class) != null) {
+            method.setAccessible(true);
             callbackMethodMap.put(Callback.PRE_PERSIST, method);
         }
         if (callbackMethodMap.get(Callback.POST_PERSIST) == null && method.getAnnotation(PostPersist.class) != null) {
+            method.setAccessible(true);
             callbackMethodMap.put(Callback.POST_PERSIST, method);
         }
         if (callbackMethodMap.get(Callback.PRE_UPDATE) == null && method.getAnnotation(PreUpdate.class) != null) {
+            method.setAccessible(true);
             callbackMethodMap.put(Callback.PRE_UPDATE, method);
         }
         if (callbackMethodMap.get(Callback.POST_UPDATE) == null && method.getAnnotation(PostUpdate.class) != null) {
+            method.setAccessible(true);
             callbackMethodMap.put(Callback.POST_UPDATE, method);
         }
         if (callbackMethodMap.get(Callback.PRE_REMOVE) == null && method.getAnnotation(PreRemove.class) != null) {
+            method.setAccessible(true);
             callbackMethodMap.put(Callback.PRE_REMOVE, method);
         }
         if (callbackMethodMap.get(Callback.POST_REMOVE) == null && method.getAnnotation(PostRemove.class) != null) {
+            method.setAccessible(true);
             callbackMethodMap.put(Callback.POST_REMOVE, method);
         }
         if (callbackMethodMap.get(Callback.POST_LOAD) == null && method.getAnnotation(PostLoad.class) != null) {
+            method.setAccessible(true);
             callbackMethodMap.put(Callback.POST_LOAD, method);
         }
     }

@@ -91,12 +91,36 @@ public class CrudProvider {
             }
         }
         return updateSqlBuilder.update(tableInfo.getTableName())
-                .set(updateColumns).toString();
+                .set(columns).toString();
     }
 
     public static String updateBatch(ProviderContext context, Map<String, Object> params) {
         TableInfo tableInfo = getTableInfo(context);
-        return BatchUpdateSqlUpdate.builder().update(tableInfo.getTableName()).set(tableInfo.getUpdateColumns(), ((List<?>) params.get(Params.LIST)).size()).toString();
+        List<String> updateColumns = tableInfo.getUpdateColumns();
+        List<?> list = ((List<?>) params.get(Params.LIST));
+        boolean ignoreNull = params.containsKey(Params.IGNORE_NULL) && (boolean) params.get(Params.IGNORE_NULL);
+        List<List<String>> columnList = new ArrayList<>();
+        if(ignoreNull){
+            for (final Object entity : list) {
+                MetaObject metaObject = getMetaObject(entity);
+                List<String> columns = new ArrayList<>(updateColumns);
+                for (Iterator<String> iterator = columns.iterator(); iterator.hasNext(); ) {
+                    String column = iterator.next();
+                    String fieldName = tableInfo.getField(column);
+                    Object value = null;
+                    if (metaObject.hasGetter(fieldName)) {
+                        value = metaObject.getValue(fieldName);
+                    }
+                    if (Objects.isNull(value)) {
+                        iterator.remove();
+                    }
+                }
+                columnList.add(columns);
+            }
+        }else {
+            list.forEach(entity -> columnList.add(updateColumns));
+        }
+        return BatchUpdateSqlUpdate.builder().update(tableInfo.getTableName(), columnList).toString();
     }
 
     public static String delete(ProviderContext context, Map<String, Object> params) {

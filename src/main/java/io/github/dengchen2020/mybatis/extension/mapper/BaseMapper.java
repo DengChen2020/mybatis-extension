@@ -55,7 +55,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
     }
 
     default List<T> findAllById(List<?> ids) {
-        if (Objects.isNull(ids) || ids.contains(null)) throw new IllegalArgumentException("ids不能为null或包含null");
+        if (Objects.isNull(ids) || ids.stream().anyMatch(Objects::isNull)) throw new IllegalArgumentException("ids不能为null或包含null");
         return selectList(QueryWrapper.create().in(getTableInfo().getIdColumn(), ids));
     }
 
@@ -105,10 +105,23 @@ public interface BaseMapper<T> extends CrudMapper<T> {
      * @param list 数据集合
      * @param size 单批次数量
      * @return 大于0-成功
-     * @apiNote 不忽略null值，不触发乐观锁，url需加allowMultiQueries=true
+     * @apiNote 忽略null值，不触发乐观锁，url需加allowMultiQueries=true
      */
     default long updateBatch(List<T> list, Integer size) {
-        if (Objects.isNull(list) || list.contains(null)) throw new IllegalArgumentException("list不能为null或包含null");
+        return updateBatch(list, size, true);
+    }
+
+    /**
+     * 批量更新
+     *
+     * @param list 数据集合
+     * @param size 单批次数量
+     * @param ignoreNull 是否忽略null值
+     * @return 大于0-成功
+     * @apiNote 不触发乐观锁，url需加allowMultiQueries=true
+     */
+    default long updateBatch(List<T> list, Integer size, boolean ignoreNull) {
+        if (Objects.isNull(list) || list.stream().anyMatch(Objects::isNull)) throw new IllegalArgumentException("list不能为null或包含null");
         if (list.isEmpty()) return 0;
         TableInfo tableInfo = getTableInfo();
         Method preUpdate = tableInfo.getPreUpdate();
@@ -125,7 +138,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
                     }
                 });
             }
-            if (updateBatch(updateList) > 0) {
+            if (updateBatch(updateList, ignoreNull) > 0) {
                 result += updateList.size();
             }
             if (postUpdate != null) {
@@ -142,7 +155,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
     }
 
     default long delete(List<?> ids) {
-        if (Objects.isNull(ids) || ids.contains(null)) throw new IllegalArgumentException("ids不能为null或包含null");
+        if (Objects.isNull(ids) || ids.stream().anyMatch(Objects::isNull)) throw new IllegalArgumentException("ids不能为null或包含null");
         if (ids.isEmpty()) {
             return 0;
         }
@@ -220,7 +233,7 @@ public interface BaseMapper<T> extends CrudMapper<T> {
      * @see Mapper#insertBatch(List)
      */
     default long insertBatch(List<T> list, Integer size) {
-        if (Objects.isNull(list) || list.contains(null)) throw new IllegalArgumentException("list不能为null或包含null");
+        if (Objects.isNull(list) || list.stream().anyMatch(Objects::isNull)) throw new IllegalArgumentException("list不能为null或包含null");
         if (list.isEmpty()) return 0;
         long result = 0;
         TableInfo tableInfo = getTableInfo();
