@@ -1,5 +1,5 @@
 # mybatis-extension
-mybatis扩展，基于mybatis实现，提供CRUD通用操作，分页，内外连接查询，支持jpa注解，乐观锁，数据填充等功能，可以与其他orm框架一起使用
+mybatis扩展，基于mybatis实现，提供CRUD通用操作，分页，内外连接查询，支持jpa注解，乐观锁，数据填充等功能，可以与其他orm框架一起使用。例如：mybatis-plus，mybatis-springboot-starter
 
 ## 开始使用
 - Maven:
