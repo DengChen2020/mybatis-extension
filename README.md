@@ -16,7 +16,7 @@ mybatis扩展，基于mybatis实现，提供CRUD通用操作，分页，内外�
 <dependency>
     <groupId>io.github.dengchen2020</groupId>
     <artifactId>entity-processor</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
 </dependency>
 ```
 下面版本使用旧版注解
